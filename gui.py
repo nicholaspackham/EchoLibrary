@@ -14,7 +14,7 @@ from metadata_extractor import (extract_metadata, is_valid_folder)
 # TODO (GUI Improvements):
 # Set the Song Name, Album Name and Artist to LEFT aligned
 # Have the window the full width and top half of the screen (both home and Database Viewer)
-# Fix the buttons
+# Organise the screens better - fix the buttons, etc
 # Add loading icons
 # ---------------------------------------------------------------------------------
 

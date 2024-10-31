@@ -216,10 +216,6 @@ def delete_selected_songs(full_delete, tree):
         # Remove from Treeview
         tree.delete(selected_item)
 
-    # Show confirmation message
-    if full_delete:
-        messagebox.showinfo("Deleted", "Selected song(s) have been deleted.")
-
 
 def export_to_excel(doc_prefix, col_headers, tree):
     # Check if the Treeview is empty

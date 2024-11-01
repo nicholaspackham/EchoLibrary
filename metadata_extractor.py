@@ -1,8 +1,6 @@
-import os
-import re
 from datetime import datetime
 from pymediainfo import MediaInfo
-from settings import ALLOWED_ROOT_FOLDER
+from constants import ALLOWED_ROOT_FOLDER
 
 
 def extract_metadata(file_path):

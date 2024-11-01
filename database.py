@@ -1,7 +1,3 @@
-# ----------------------------------------------------------------------------------------------------------------
-# NOTES: Using "time" (with speech marks) as a column name instead of time, as 'time' is a keyword
-# ----------------------------------------------------------------------------------------------------------------
-
 import sqlite3
 
 
@@ -9,8 +5,7 @@ def setup_database():
     conn = sqlite3.connect('music_metadata.db')
     cursor = conn.cursor()
 
-    # cursor.execute("DROP TABLE IF EXISTS songs")
-
+    # NOTES: Using "time" (with speech marks) as a column name instead of time, as 'time' is a keyword
     cursor.execute('''CREATE TABLE IF NOT EXISTS songs
                     (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -74,7 +69,9 @@ def get_all_songs():
                         ,"time"
                         ,file_size
                         ,created_date
-                    FROM songs''')
+                    FROM songs
+                    ORDER BY created_date DESC'''
+                   )
     songs = cursor.fetchall()
 
     conn.close()
@@ -96,7 +93,8 @@ def get_songs_by_name(song_name):
                                 ,file_size
                                 ,created_date 
                             FROM songs 
-                            WHERE song LIKE ?''',
+                            WHERE song LIKE ?
+                            ORDER BY created_date DESC''',
                    ('%' + song_name + '%',))
 
     results = cursor.fetchall()

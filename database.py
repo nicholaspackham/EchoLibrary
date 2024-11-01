@@ -5,7 +5,9 @@ def setup_database():
     conn = sqlite3.connect('music_metadata.db')
     cursor = conn.cursor()
 
-    # NOTES: Using "time" (with speech marks) as a column name instead of time, as 'time' is a keyword
+    # cursor.execute("DROP TABLE IF EXISTS songs")  # used to clear the songs table when testing
+
+    # Using "time" (with speech marks) as a column name instead of time, as 'time' is a keyword
     cursor.execute('''CREATE TABLE IF NOT EXISTS songs
                     (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,

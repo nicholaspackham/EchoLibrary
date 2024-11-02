@@ -8,7 +8,7 @@ from constants import HELP_AND_INFORMATION_TEXT
 
 
 # ---- Windows (Main Frame & Database Frame) ----
-def setup_gui():
+def setup_gui(icon_path):
     # Main window setup
     root = TkinterDnD.Tk()
 
@@ -18,7 +18,7 @@ def setup_gui():
     root.configure(bg="#333333")
 
     # Set the window icon
-    icon = tk.PhotoImage(file='images/echo-library-icon.png')
+    icon = tk.PhotoImage(file=icon_path)
     root.iconphoto(True, icon)
 
     # Apply custom style for buttons

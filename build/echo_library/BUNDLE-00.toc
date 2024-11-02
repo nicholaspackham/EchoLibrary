@@ -1,0 +1,3 @@
+([('Echo Library',
+   '/Users/nicholaspackham/_Projects/EchoLibrary/dist/Echo Library',
+   'EXECUTABLE')],)

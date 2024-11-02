@@ -1,11 +1,21 @@
+import os
 import sqlite3
 
 
+# Define the path for the Echo Library application directory and the database file
+app_dir = "/Users/nicholaspackham/Applications/Echo Library"
+database_path = os.path.join(app_dir, "echo_library.db")
+
+
 def setup_database():
-    conn = sqlite3.connect('music_metadata.db')
+    # Ensure the directory exists
+    os.makedirs(app_dir, exist_ok=True)
+
+    conn = sqlite3.connect(database_path)
     cursor = conn.cursor()
 
-    # cursor.execute("DROP TABLE IF EXISTS songs")  # used to clear the songs table when testing
+    # Used to clear the songs table when testing - uncomment this line and comment out the 'CREATE TABLE' section below
+    # cursor.execute("DROP TABLE IF EXISTS songs")
 
     # Using "time" (with speech marks) as a column name instead of time, as 'time' is a keyword
     cursor.execute('''CREATE TABLE IF NOT EXISTS songs
@@ -28,7 +38,7 @@ def insert_into_database(is_duplicate, metadata):
     if is_duplicate:
         return  # duplicate found
 
-    conn = sqlite3.connect('music_metadata.db')
+    conn = sqlite3.connect(database_path)
     cursor = conn.cursor()
 
     cursor.execute('''INSERT INTO songs 
@@ -60,7 +70,7 @@ def insert_into_database(is_duplicate, metadata):
 
 
 def get_all_songs():
-    conn = sqlite3.connect('music_metadata.db')
+    conn = sqlite3.connect(database_path)
     cursor = conn.cursor()
 
     cursor.execute('''SELECT 
@@ -83,7 +93,7 @@ def get_all_songs():
 
 def get_songs_by_name(song_name):
     # Fetch songs from the database that match the provided song name.
-    conn = sqlite3.connect('music_metadata.db')
+    conn = sqlite3.connect(database_path)
     cursor = conn.cursor()
 
     cursor.execute('''SELECT 
@@ -106,7 +116,7 @@ def get_songs_by_name(song_name):
 
 
 def delete_song(song, album, artist):
-    conn = sqlite3.connect('music_metadata.db')
+    conn = sqlite3.connect(database_path)
     cursor = conn.cursor()
 
     cursor.execute("DELETE FROM songs WHERE song=? AND album=? AND artist=?",
@@ -118,7 +128,7 @@ def delete_song(song, album, artist):
 
 def check_song_exists(song, album, artist):
     # Check if a song already exists in the database.
-    conn = sqlite3.connect('music_metadata.db')
+    conn = sqlite3.connect(database_path)
     cursor = conn.cursor()
 
     cursor.execute("SELECT 1 FROM songs WHERE song=? AND album=? AND artist=?",

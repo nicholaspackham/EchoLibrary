@@ -76,8 +76,8 @@ def on_drop(event, tree):
     for file_path in file_paths:
         if not is_valid_folder(file_path):
             messagebox.showerror("Invalid Folder", ("Please drag folders from the allowed path.\n\n" +
-                                                    " Allowed path: "
-                                                    "/Users/*user_name*/Music/Music/Media.localized/Apple Music")
+                                                         " Allowed path: "
+                                                         "/Users/*user_name*/Music/Music/Media.localized/Apple Music")
                                  )
             continue
 
@@ -101,8 +101,8 @@ def display_metadata(tree, metadata, is_duplicate):
 
     tree.insert("", "end", values=(
         metadata.get('song', 'N/A'), metadata.get('album', 'N/A'), metadata.get('artist', 'N/A'),
-        metadata.get('approx_release_date', 'N/A'), status
-    ))
+        metadata.get('approx_release_date', 'N/A'), status)
+    )
 
 
 # ---- Data Manipulation ----

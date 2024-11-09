@@ -3,6 +3,8 @@ SONG_SEARCH_BAR_PLACEHOLDER = "Search song..."
 HELP_AND_INFORMATION_TEXT = (
         "--------Help & Information--------\n\n" +
 
+        "--------------------------------------------------------------------------------------------------------\n\n"
+        
         "----Overview----\n" +
 
         "Echo Library is a music metadata management application designed to help users organise, view, " +
@@ -16,8 +18,11 @@ HELP_AND_INFORMATION_TEXT = (
 
         "One of the key data points highlighted within Echo Library is the approximate release date. The app " +
         "extracts this information for each song, making it easy to identify the latest tracks.\n\n"
+        
+        "--------------------------------------------------------------------------------------------------------\n\n"
 
         "----Functionality----\n"
+        
         "The app enables users to drag and drop folders containing `.m4p` files directly into the interface. " +
         "The app's design aligns with Apple Music's file storage structure on Mac, where songs are organised in a " +
         "nested folder format by artist and then album, with the song file (song.m4p) stored within " +
@@ -35,11 +40,74 @@ HELP_AND_INFORMATION_TEXT = (
         "use the `Open Database Viewer` button, which provides a complete view of all previously imported songs. " +
         "The database viewer also offers features to search for specific songs, delete selected songs entirely from " +
         "the database, and export all data to Excel for further analysis.\n\n"
+        
+        "--------------------------------------------------------------------------------------------------------\n\n"
+
+        "----Handling Errors within the Drag and Drop Window----\n"
+        
+        "If an error occurs while using the drag-and-drop feature in Echo Library, it’s helpful to understand" +
+        " how the app handles folder imports. Unlike a typical import sequence, Echo Library imports folders in " +
+        "reverse order, starting from the top of your selected files rather than the bottom.\n\n"
+        
+        "This isn’t an issue unless an error disrupts the import. When that happens, it’s easy to lose track of " +
+        "your progress.\n\n"
+        
+        "For example, say you have five existing folders already imported and are now adding five more. " +
+        "In Finder/File Explorer, they might look like the following section (Finder/File Explorer Order).\n\n"
+        
+        "--Finder/File Explorer Order--\n"
+        "-Little Mix\n"
+        "-Skepta\n"
+        "-Giggs"
+        "-5SOS\n"
+        "-Luke Combs\n"
+        "-Stormzy\n"
+        "-Zayn\n"
+        "-Niall Horan\n"
+        "-Justin Bieber\n"
+        "-Harry Styles\n\n"
+        
+        "--Existing Folders (how they appear in Echo Library)--\n"
+        "-Harry Styles\n"
+        "-Justin Bieber\n"
+        "-Niall Horan\n"
+        "-Zayn\n"
+        "-Stormzy\n\n"
+        
+        "--New Import Folders (imported order)--\n"
+        "-Little Mix\n"
+        "-Skepta\n"
+        "-Giggs                 <—ERROR\n"
+        "-5SOS\n"
+        "-Luke Combs\n\n"
+        
+        "If the import encounters an error on the 'Giggs' folder, the app will import only 'Little Mix' and " +
+        "'Skepta', terminating at 'Giggs' due to the error. It won't even get to either '5SOS' or 'Luke Combs.'\n\n"
+        
+        "--New Folders (how the two imported folders will appear in the app)--\n"
+        "-Little Mix             <-- NEW\n"
+        "-Skepta                <-- NEW\n"
+        "-Harry Styles\n"
+        "-Justin Bieber\n"
+        "-Niall Horan\n"
+        "-Zayn\n"
+        "-Stormzy\n\n"
+        
+        "To avoid issues, remember the last imported folder before beginning your next batch. In this case, note " +
+        "that 'Harry Styles' was your last existing folder, and 'Luke Combs' is the final folder in your import " +
+        "batch.\n\n"
+        
+        "By following these steps, you’ll be able to track your imports accurately and resume smoothly if an error " +
+        "occurs.\n\n"
+
+        "--------------------------------------------------------------------------------------------------------\n\n"
 
         "----Error Log----\n"
-        
+
         "The Error Log tracks errors encountered during folder processing within the application. Occasionally, " +
         "some music folders may not upload successfully. However, the Error Log allows you to monitor all " +
         "unsuccessful uploads to the application, with the added ability to export all error logs for easier " +
-        "tracking and troubleshooting.\n"
-    )
+        "tracking and troubleshooting.\n\n"
+        
+        "--------------------------------------------------------------------------------------------------------\n\n"
+)

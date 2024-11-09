@@ -1,11 +1,33 @@
+import os
+import re
 from datetime import datetime
 from pymediainfo import MediaInfo
-from constants import ALLOWED_ROOT_FOLDER
+from settings import ALLOWED_MUSIC_FOLDER
 
 
 def extract_metadata(file_path):
     media_info = MediaInfo.parse(file_path)
     metadata = {}
+
+    # Using the folder structure (Artist > Album > Song) extract the song, album and artist
+    #   -Can be extracted using MediaInfo package - although not all tracks have this info and this can cause an error
+    folder_path = os.path.dirname(file_path)
+    song_name = os.path.basename(file_path)
+
+    # Assuming the folder structure is Artist > Album > Song (default folder structure for Apple Music)
+    path_parts = folder_path.split(os.sep)
+    if len(path_parts) >= 2:
+        metadata['artist'] = path_parts[-2]
+        metadata['album'] = path_parts[-1]
+    else:
+        metadata['artist'] = "Unknown"
+        metadata['album'] = "Unknown"
+
+    # Remove track number from song name if it exists (e.g., "01 Song Name" becomes "Song Name")
+    song_name = re.sub(r"^\d+\s*", "", song_name)
+    metadata['song'] = os.path.splitext(song_name)[0]
+
+    # Get metadata for the passed in track via the MediaInfo package
     for track in media_info.tracks:
         if track.track_type == "General":
             # Approx Release Date - Format to DD/MM/YYYY
@@ -31,9 +53,6 @@ def extract_metadata(file_path):
             # Created Date - Getting today's date and time and formatting it to YY-MM-DD HH:MM:ss
             created_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-            metadata['song'] = track.title_sort
-            metadata['album'] = track.album_sorted_by
-            metadata['artist'] = track.performer_sorted_by
             metadata['approx_release_date'] = approx_release_date
             metadata['time'] = time_min
             metadata['file_size'] = file_size_mb
@@ -52,9 +71,12 @@ def format_date(date_str):
         parsed_date = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
         return parsed_date.strftime("%Y-%m-%d")
     except (ValueError, TypeError):
-        return "Invalid Date"
+        # Return default date in YYYY-MM-DD format if parsing fails
+        return "1900-01-01"
 
 
 def is_valid_folder(file_path):
-    return file_path.startswith(ALLOWED_ROOT_FOLDER)
+    root_directory = os.path.expanduser("~")  # e.g. '/Users/nicholaspackham'
+    music_directory = os.path.join(root_directory, ALLOWED_MUSIC_FOLDER)
+    return file_path.startswith(music_directory)
 

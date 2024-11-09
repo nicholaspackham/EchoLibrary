@@ -4,9 +4,12 @@ import tkinter as tk
 from datetime import datetime
 from tkinter import (ttk, messagebox)
 from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
+from openpyxl.utils import get_column_letter
 from database import (check_song_exists, insert_into_database, get_all_songs, get_songs_by_name, delete_song)
 from metadata_extractor import (extract_metadata, is_valid_folder)
 from constants import (SONG_SEARCH_BAR_PLACEHOLDER)
+from settings import (IS_TEST_MODE, APP_ROOT_FOLDER_TEST_MODE, APP_ROOT_FOLDER, ALLOWED_MUSIC_FOLDER)
 
 
 # ---- Treeview Setup ----
@@ -75,10 +78,12 @@ def on_drop(event, tree):
     file_paths = event.widget.tk.splitlist(event.data)
     for file_path in file_paths:
         if not is_valid_folder(file_path):
-            messagebox.showerror("Invalid Folder", ("Please drag folders from the allowed path.\n\n" +
-                                                         " Allowed path: "
-                                                         "/Users/*user_name*/Music/Music/Media.localized/Apple Music")
-                                 )
+            messagebox.showerror(
+                "Invalid Folder",
+                "Error: Please drag folders from the allowed path.\n\n" +
+                "Allowed path:\n" +
+                f"{ALLOWED_MUSIC_FOLDER}"
+            )
             continue
 
         if os.path.isdir(file_path):
@@ -102,7 +107,7 @@ def display_metadata(tree, metadata, is_duplicate):
     tree.insert("", "end", values=(
         metadata.get('song', 'N/A'), metadata.get('album', 'N/A'), metadata.get('artist', 'N/A'),
         metadata.get('approx_release_date', 'N/A'), status)
-    )
+                )
 
 
 # ---- Data Manipulation ----
@@ -116,10 +121,11 @@ def load_all_songs(tree):
 
     # Insert each song into the Treeview
     for (song, album, artist, approx_release_date, time, file_size, created_date) in songs:
-        tree.insert("",
-                    "end",
-                    values=(song, album, artist, approx_release_date, time, file_size, created_date)
-                    )
+        tree.insert(
+            "",
+            "end",
+            values=(song, album, artist, approx_release_date, time, file_size, created_date)
+        )
 
 
 def refresh_db_data(search_bar, tree):
@@ -146,7 +152,7 @@ def delete_selected_songs(full_delete, tree):
     selected_items = tree.selection()
 
     if not selected_items:
-        messagebox.showwarning("No Selection", "Please select one or more songs to delete.")
+        messagebox.showwarning("No Selection", "Error: No song(s) have been selected.")
         return
 
     # Confirm deletion for all selected items
@@ -171,17 +177,32 @@ def delete_selected_songs(full_delete, tree):
 def export_to_excel(doc_prefix, col_headers, tree):
     # Check if the Treeview is empty
     if not tree.get_children():
-        messagebox.showwarning("Export Failed", "No data to export.")
+        messagebox.showwarning("Export Failed", "Error: No data to export.")
         return
 
     # Confirmation to export to Excel
     if not messagebox.askyesno("Confirm Excel Export", "Are you sure you to export this data to Excel?"):
         return
 
-    # Set file path to Desktop with the name 'songs_YYYY-MM-DD.xlsx'
-    desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
-    current_date = datetime.now().strftime("%Y-%m-%d")
-    file_path = os.path.join(desktop_path, f"{doc_prefix}_{current_date}.xlsx")
+    # Save the exported Excel file to the path defined within the save_directory variable
+    root_directory = os.path.expanduser("~")  # e.g. '/Users/nicholaspackham'
+
+    # Using two different directories for testing and prod
+    if IS_TEST_MODE:
+        save_directory = os.path.join(root_directory, APP_ROOT_FOLDER_TEST_MODE)
+    else:
+        save_directory = os.path.join(root_directory, APP_ROOT_FOLDER)
+
+    # Append 'Excel Exports' on to APP_ROOT_FOLDER*
+    save_directory = os.path.join(save_directory, "Excel Exports")
+
+    # Create the directory - if it does not exist
+    if not os.path.exists(save_directory):
+        os.makedirs(save_directory)
+
+    # Generate the file name - which will provide the full file_path
+    current_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
+    file_path = os.path.join(save_directory, f"{doc_prefix}_{current_datetime}.xlsx")
 
     # Create a new Excel workbook and sheet
     workbook = Workbook()
@@ -189,16 +210,51 @@ def export_to_excel(doc_prefix, col_headers, tree):
     sheet.title = "Songs"
 
     # Add headers
+    # sheet.append(col_headers)
+
+    # Define styling for headers (excel)
+    header_font = Font(bold=True, color="FFFFFF")
+    header_fill = PatternFill(start_color="4F81BD", end_color="4F81BD", fill_type="solid")
+    alignment = Alignment(horizontal="center", vertical="center")
+    thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'),
+                         bottom=Side(style='thin'))
+
+    # Add headers with styling (excel)
     sheet.append(col_headers)
+    for col in sheet.iter_cols(min_row=1, max_row=1, min_col=1, max_col=len(col_headers)):
+        for cell in col:
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = alignment
+            cell.border = thin_border
 
     # Add Treeview data to the Excel sheet
     for row_id in tree.get_children():
         row = tree.item(row_id)['values']
         sheet.append(row)
 
+    # Add filters to the header row (excel)
+    sheet.auto_filter.ref = sheet.dimensions
+
+    # Auto-fit column width
+    # Auto-fit columns
+    for col in sheet.columns:
+        max_length = max(len(str(cell.value) or "") for cell in col)
+        adjusted_width = max_length + 2
+        sheet.column_dimensions[get_column_letter(col[0].column)].width = adjusted_width
+
+    # Hide the "Album" column (column B)
+    # -Album column not really required, and gets in the way when using Apple Music and the Excel export together
+    sheet.column_dimensions["B"].hidden = True
+
     # Save the workbook
     workbook.save(file_path)
-    messagebox.showinfo("Export Successful", f"Success! Data has been exported to {file_path}")
+    messagebox.showinfo(
+        "Export Successful",
+        "Success! Data has been exported to Excel.\n\n" +
+        "Excel Export Location:\n" +
+        f"{file_path}"
+    )
 
     # Automatically open the file
     try:
@@ -207,4 +263,9 @@ def export_to_excel(doc_prefix, col_headers, tree):
         elif os.name == 'posix':  # macOS and Linux
             subprocess.Popen(['open', file_path] if os.uname().sysname == 'Darwin' else ['xdg-open', file_path])
     except Exception as e:
-        messagebox.showerror("Error", f"Could not open file: {e}")
+        messagebox.showerror(
+            "Error",
+            "Error: Could not open file.\n\n" +
+            "File Location:\n" +
+            f"{e}"
+        )

@@ -1,8 +1,4 @@
-ALLOWED_ROOT_FOLDER = r'/Users/nicholaspackham/Music/Music/Media.localized/Apple Music/'
-
-
 SONG_SEARCH_BAR_PLACEHOLDER = "Search song..."
-
 
 HELP_AND_INFORMATION_TEXT = (
         "--------Help & Information--------\n\n" +

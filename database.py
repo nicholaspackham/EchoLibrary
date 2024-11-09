@@ -1,15 +1,31 @@
 import os
 import sqlite3
+from settings import (IS_TEST_MODE, APP_ROOT_FOLDER_TEST_MODE, APP_ROOT_FOLDER)
 
 
 # Define the path for the Echo Library application directory and the database file
-app_dir = "/Users/nicholaspackham/Applications/Echo Library"
-database_path = os.path.join(app_dir, "echo_library.db")
+root_directory = os.path.expanduser("~")  # e.g. '/Users/nicholaspackham'
+
+# Using two different directories for testing and prod
+if IS_TEST_MODE:
+    db_directory = os.path.join(root_directory, APP_ROOT_FOLDER_TEST_MODE)
+else:
+    db_directory = os.path.join(root_directory, APP_ROOT_FOLDER)
+
+# Append 'SQLite DB' on to APP_ROOT_FOLDER*
+db_directory = os.path.join(db_directory, "SQLite DB")
+
+# Create the directory - if it does not exist
+if not os.path.exists(db_directory):
+    os.makedirs(db_directory)
+
+# Generate the file name - which will provide the full database_path
+database_path = os.path.join(db_directory, "echo_library.db")
 
 
 def setup_database():
     # Ensure the directory exists
-    os.makedirs(app_dir, exist_ok=True)
+    os.makedirs(db_directory, exist_ok=True)
 
     conn = sqlite3.connect(database_path)
     cursor = conn.cursor()

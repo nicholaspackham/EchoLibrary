@@ -34,5 +34,12 @@ HELP_AND_INFORMATION_TEXT = (
         "is stored persistently until you choose to remove it. To access your full `browsed` music library, you can " +
         "use the `Open Database Viewer` button, which provides a complete view of all previously imported songs. " +
         "The database viewer also offers features to search for specific songs, delete selected songs entirely from " +
-        "the database, and export all data to Excel for further analysis.\n"
+        "the database, and export all data to Excel for further analysis.\n\n"
+
+        "----Error Log----\n"
+        
+        "The Error Log tracks errors encountered during folder processing within the application. Occasionally, " +
+        "some music folders may not upload successfully. However, the Error Log allows you to monitor all " +
+        "unsuccessful uploads to the application, with the added ability to export all error logs for easier " +
+        "tracking and troubleshooting.\n"
     )

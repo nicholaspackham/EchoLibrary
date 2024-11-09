@@ -2,7 +2,7 @@ import os
 import re
 from datetime import datetime
 from pymediainfo import MediaInfo
-from settings import ALLOWED_MUSIC_FOLDER
+from settings import APPROVED_MUSIC_FOLDER
 
 
 def extract_metadata(file_path):
@@ -77,6 +77,6 @@ def format_date(date_str):
 
 def is_valid_folder(file_path):
     root_directory = os.path.expanduser("~")  # e.g. '/Users/nicholaspackham'
-    music_directory = os.path.join(root_directory, ALLOWED_MUSIC_FOLDER)
+    music_directory = os.path.join(root_directory, APPROVED_MUSIC_FOLDER)
     return file_path.startswith(music_directory)
 

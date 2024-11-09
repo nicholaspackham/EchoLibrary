@@ -1,7 +1,9 @@
 import os
 import sqlite3
-from settings import (IS_TEST_MODE, APP_ROOT_FOLDER_TEST_MODE, APP_ROOT_FOLDER)
+from datetime import datetime
+from enums import (ErrorType)
 
+from settings import (IS_TEST_MODE, APP_ROOT_FOLDER_TEST_MODE, APP_ROOT_FOLDER)
 
 # Define the path for the Echo Library application directory and the database file
 root_directory = os.path.expanduser("~")  # e.g. '/Users/nicholaspackham'
@@ -30,9 +32,6 @@ def setup_database():
     conn = sqlite3.connect(database_path)
     cursor = conn.cursor()
 
-    # Used to clear the songs table when testing - uncomment this line and comment out the 'CREATE TABLE' section below
-    # cursor.execute("DROP TABLE IF EXISTS songs")
-
     # Using "time" (with speech marks) as a column name instead of time, as 'time' is a keyword
     cursor.execute('''CREATE TABLE IF NOT EXISTS songs
                     (
@@ -46,11 +45,19 @@ def setup_database():
                         created_date DATETIME NOT NULL
                     )''')
 
+    cursor.execute('''CREATE TABLE IF NOT EXISTS error_log
+                    (
+                        error_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        error_type TEXT NOT NULL,
+                        error_message TEXT NOT NULL,
+                        created_date DATETIME NOT NULL
+                    )''')
+
     conn.commit()
     conn.close()
 
 
-def insert_into_database(is_duplicate, metadata):
+def insert_into_songs(is_duplicate, metadata):
     if is_duplicate:
         return  # duplicate found
 
@@ -83,6 +90,27 @@ def insert_into_database(is_duplicate, metadata):
 
     conn.commit()
     conn.close()
+
+
+def insert_into_error_log(error_type, error_message):
+    if not isinstance(error_type, ErrorType):
+        raise ValueError("Error: The 'error_type' passed in must be an instance of ErrorType")
+
+    conn = sqlite3.connect(database_path)
+    cursor = conn.cursor()
+
+    created_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    cursor.execute('''INSERT INTO error_log 
+                      (error_type, error_message, created_date) 
+                      VALUES (?, ?, ?)''',
+                   (error_type.value, error_message, created_date))  # Use ErrorType.value for the TEXT
+
+    error_id = cursor.lastrowid  # retrieve the ID of the newly inserted row
+    conn.commit()
+    conn.close()
+
+    return error_id
 
 
 def get_all_songs():
@@ -131,12 +159,63 @@ def get_songs_by_name(song_name):
     return results
 
 
+def get_all_error_logs():
+    conn = sqlite3.connect(database_path)
+    cursor = conn.cursor()
+
+    cursor.execute('''SELECT 
+                         error_id
+                        ,error_type
+                        ,error_message
+                        ,created_date 
+                    FROM error_log 
+                    ORDER BY created_date DESC'''
+                   )
+    song_error_logs = cursor.fetchall()
+
+    conn.close()
+
+    return song_error_logs
+
+
+def get_processing_error_logs():
+    conn = sqlite3.connect(database_path)
+    cursor = conn.cursor()
+
+    cursor.execute('''SELECT 
+                         error_id
+                        ,error_type
+                        ,error_message
+                        ,created_date 
+                      FROM error_log 
+                      WHERE error_type=? 
+                      ORDER BY created_date DESC''',
+                   (ErrorType.PROCESSING_ERROR.value,)
+                   )
+    processing_error_logs = cursor.fetchall()
+
+    conn.close()
+
+    return processing_error_logs
+
+
 def delete_song(song, album, artist):
     conn = sqlite3.connect(database_path)
     cursor = conn.cursor()
 
     cursor.execute("DELETE FROM songs WHERE song=? AND album=? AND artist=?",
                    (song, album, artist))
+
+    conn.commit()
+    conn.close()
+
+
+def delete_error_log(error_id):
+    conn = sqlite3.connect(database_path)
+    cursor = conn.cursor()
+
+    # Even if single param, SQLite expects a tuple '(item,)'
+    cursor.execute("DELETE FROM error_log WHERE error_id=?", (error_id,))
 
     conn.commit()
     conn.close()

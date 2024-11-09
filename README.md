@@ -1,7 +1,6 @@
 # Echo Library
 
 ## Overview
-
 Echo Library is a music metadata management application designed to help users organise, view, and track music they 
 have browsed while exploring for new songs.
 
@@ -32,3 +31,9 @@ is stored persistently until you choose to remove it. To access your full browse
 use the `Open Database Viewer` button, which provides a complete view of all previously imported songs.
 The database viewer also offers features to search for specific songs, delete selected songs entirely from 
 the database, and export all data to Excel for further analysis.
+
+## Error Log
+The Error Log tracks errors encountered during folder processing within the application. Occasionally,
+some music folders may not upload successfully. However, the Error Log allows you to monitor all
+unsuccessful uploads to the application, with the added ability to export all error logs for easier
+tracking and troubleshooting.

@@ -2,8 +2,9 @@ import tkinter as tk
 from tkinter import (ttk, Toplevel)
 from tkinterdnd2 import (TkinterDnD, DND_FILES)
 from gui_components import (create_custom_style, create_button, set_search_bar_placeholder, on_focus_in, on_focus_out,
-                            setup_treeview, on_drop, load_all_songs, refresh_db_data, search_song,
-                            delete_selected_songs, export_to_excel)
+                            setup_treeview, on_drop, load_all_songs, load_all_error_logs, load_processing_error_logs,
+                            refresh_db_data, refresh_err_data, search_song, delete_selected_songs,
+                            delete_selected_error_log, export_to_excel)
 from constants import HELP_AND_INFORMATION_TEXT
 
 
@@ -98,6 +99,44 @@ def open_help_and_info_window():
     close_button.pack(pady=10)
 
 
+def open_error_log_window():
+    # Create a new Toplevel window
+    err_window = Toplevel()
+    err_window.title("Echo Library - Error Log")
+
+    # Set the window size (width x height) and position (optional)
+    err_window.geometry("1200x500")  # Adjust width and height as needed
+
+    # Apply custom style for buttons
+    create_custom_style(err_window)
+
+    # Configure grid layout for err_window
+    err_window.grid_rowconfigure(1, weight=1)  # Allow row 1 (Treeview row) to expand
+    err_window.grid_columnconfigure(0, weight=1)  # Allow column 0 to expand
+
+    # Column names and properties
+    column_properties = {
+        "Error ID": {"width": 30, "anchor": "center"},
+        "Error Type": {"width": 30, "anchor": "center"},
+        "Error Message": {"width": 800, "anchor": "w"},
+        "Created Date": {"width": 80, "anchor": "center"}
+    }
+    columns = list(column_properties.keys())
+
+    # Create a frame for the Treeview and initialize err_tree
+    tree_frame = tk.Frame(err_window)
+    tree_frame.grid(row=1, column=0, sticky="nsew")
+    err_tree = setup_err_table(tree_frame, column_properties)
+
+    # Set up the button frame above the Treeview, passing err_tree to it
+    button_frame = tk.Frame(err_window)
+    button_frame.grid(row=0, column=0, sticky="ew", pady=0)
+    setup_button_frame_err(button_frame, err_tree, columns)
+
+    # Load all errors by default
+    load_all_error_logs(err_tree)
+
+
 # ---- Main Frame (Contents) ----
 def setup_button_frame_mf(main_frame, tree):
     # Set up the frame holding all buttons and their commands.
@@ -118,8 +157,12 @@ def setup_button_frame_mf(main_frame, tree):
                                   "Export to Excel",
                                   lambda: export_to_excel("new-songs",
                                                           ["Song", "Album", "Artist",
-                                                           "Approx. Release Date", "Status"], tree))
+                                                           "Approx. Release Date", "Status"], tree,
+                                                          True))
     export_button.pack(side="left", padx=5)
+
+    err_button = create_button(button_frame, "Error Log", open_error_log_window)
+    err_button.pack(side="left", padx=5)
 
     help_button = create_button(button_frame, "Help", open_help_and_info_window)
     help_button.pack(side="top", padx=5)
@@ -134,9 +177,15 @@ def setup_mf_table(frame):
         "Status": {"width": 50, "anchor": "center"}
     }
     tree = setup_treeview(frame, columns_properties)
+    tree.pack(padx=10, pady=(8, 0), fill="both", expand=True)
+
+    # Create and place the folder count label with smaller font and left alignment
+    status_font = ("Arial", 8)
+    status_font = tk.Label(frame, text="", font=status_font, fg="white")  # empty text initially
+    status_font.pack(anchor="w", padx=8, pady=(0, 5))  # align to the left with some padding
 
     frame.drop_target_register(DND_FILES)
-    frame.dnd_bind('<<Drop>>', lambda event: on_drop(event, tree))
+    frame.dnd_bind('<<Drop>>', lambda event: on_drop(event, tree, status_font))
 
     return tree
 
@@ -188,7 +237,8 @@ def setup_button_frame_dbw(db_window, db_tree, columns):
     col_headers = columns
     export_button = create_button(action_frame,
                                   "Export to Excel",
-                                  command=lambda: export_to_excel(doc_prefix, col_headers, db_tree)
+                                  command=lambda: export_to_excel(doc_prefix, col_headers, db_tree,
+                                                                  True)
                                   )
     export_button.pack(side="left", padx=5)
 
@@ -198,3 +248,68 @@ def setup_button_frame_dbw(db_window, db_tree, columns):
 
 def setup_dbw_table(db_window, column_properties):
     return setup_treeview(db_window, column_properties)
+
+
+# ---- Error Log Window (Contents) ----
+def setup_button_frame_err(err_window, err_tree, columns):
+    # Set up the frame holding all buttons and their commands.
+    button_frame = tk.Frame(err_window, bg="#333333")
+    button_frame.pack(anchor="w", pady=(10, 0), padx=5)
+
+    # Defining a data grid (positioning of the buttons)
+    button_frame.grid_columnconfigure(0, weight=1)  # Left side (search_frame)
+    button_frame.grid_columnconfigure(1, weight=1)  # Right side (action_frame)
+
+    # Define a variable to track the current view mode
+    view_all = tk.BooleanVar(value=True)  # Starts with "All Errors" view
+
+    # Toggle function to switch between views
+    def toggle_view():
+        if view_all.get():
+            load_processing_error_logs(err_tree)
+            toggle_button.config(text="Show All Errors")
+        else:
+            load_all_error_logs(err_tree)
+            toggle_button.config(text="Show Processing Errors")
+        view_all.set(not view_all.get())
+
+    # Toggle button for switching views
+    toggle_button = create_button(button_frame, "Show Processing Errors", command=toggle_view)
+    toggle_button.pack(side="left", padx=5)
+
+    refresh_button = create_button(button_frame,
+                                   "Refresh",
+                                   command=lambda: refresh_err_data(err_tree, view_all)
+                                   )
+    refresh_button.pack(side="left", padx=5)
+
+    delete_button = create_button(button_frame,
+                                  "Delete Selected Error Log(s)",
+                                  command=lambda: delete_selected_error_log(err_tree)
+                                  )
+    delete_button.pack(side="left", padx=5)
+
+    doc_prefix = "error-log"
+    col_headers = columns
+    export_button = create_button(button_frame,
+                                  "Export to Excel",
+                                  command=lambda: export_to_excel(doc_prefix, col_headers, err_tree,
+                                                                  False)
+                                  )
+    export_button.pack(side="left", padx=5)
+
+    help_button = create_button(button_frame, "Help", open_help_and_info_window)
+    help_button.pack(side="left", padx=5)
+
+
+def setup_err_table(err_window, column_properties):
+    # Initialize the Treeview with the specified column properties
+    err_tree = setup_treeview(err_window, column_properties)
+
+    # Apply a smaller font size to the Treeview entries
+    small_font = ("Arial", 9)  # Use a smaller font size here
+    style = ttk.Style()
+    style.configure("Treeview", font=small_font)  # Apply smaller font size to Treeview
+    style.configure("Treeview.Heading", font=("Arial", 10, "bold"))  # Optional: Heading font
+
+    return err_tree

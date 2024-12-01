@@ -2,7 +2,7 @@ import os
 import sqlite3
 from datetime import datetime
 from enums import (ErrorType)
-from settings import (IS_TEST_MODE, APP_ROOT_FOLDER_TEST_MODE, APP_ROOT_FOLDER, DATABASE_FILE_NAME)
+from settings import (IS_TEST_MODE, APP_ROOT_FOLDER_TEST_MODE, APP_ROOT_FOLDER, DATABASE_FILE_NAME, DATABASE_FILE_TYPE)
 
 _database_path = None  # global variable to store the database path
 
@@ -29,8 +29,10 @@ def database_path():
     # Create the directory - if it does not exist
     os.makedirs(db_directory, exist_ok=True)
 
+    db_file_name = DATABASE_FILE_NAME + DATABASE_FILE_TYPE
+
     # Generate the file name - which will provide the full database_path
-    _database_path = os.path.join(db_directory, DATABASE_FILE_NAME)
+    _database_path = os.path.join(db_directory, db_file_name)
 
     return _database_path
 

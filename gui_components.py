@@ -12,7 +12,8 @@ from database import (check_song_exists, insert_into_songs, insert_into_error_lo
                       database_path)
 from metadata_extractor import (extract_metadata, is_valid_folder)
 from constants import (SONG_SEARCH_BAR_PLACEHOLDER)
-from settings import (IS_TEST_MODE, APP_ROOT_FOLDER_TEST_MODE, APP_ROOT_FOLDER, APPROVED_MUSIC_FOLDER, DATABASE_FILE_NAME)
+from settings import (IS_TEST_MODE, APP_ROOT_FOLDER_TEST_MODE, APP_ROOT_FOLDER, APPROVED_MUSIC_FOLDER,
+                      DATABASE_FILE_NAME, DATABASE_FILE_TYPE)
 from enums import (ErrorType)
 
 
@@ -531,7 +532,10 @@ def save_database_backup():
     folder_path = filedialog.askdirectory()  # let the user select a directory
 
     if folder_path:  # if a folder was selected
-        file_path = os.path.join(folder_path, DATABASE_FILE_NAME)  # combine folder and database filename
+        current_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
+        db_file_name = DATABASE_FILE_NAME + "_" + current_datetime + DATABASE_FILE_TYPE
+
+        file_path = os.path.join(folder_path, db_file_name)  # combine folder and database filename
 
         try:
             shutil.copy(db_path, file_path)  # copy the database to the chosen location

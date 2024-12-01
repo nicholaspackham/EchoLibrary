@@ -1,4 +1,4 @@
-IS_TEST_MODE = True
+IS_TEST_MODE = False
 
 APP_ROOT_FOLDER_TEST_MODE = "My Applications/App Testing/Echo Library/pycharm_testing/"
 APP_ROOT_FOLDER = "Applications/Echo Library/"

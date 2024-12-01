@@ -528,10 +528,7 @@ def export_to_excel(doc_prefix, col_headers, tree, hide_column_b):
 def save_database_backup():
     db_path = database_path()  # Ensure this returns the database path
 
-    # Let the user select a directory
-    folder_path = filedialog.askdirectory(
-        title="Select Folder to Save Backup"
-    )
+    folder_path = filedialog.askdirectory()  # let the user select a directory
 
     if folder_path:  # if a folder was selected
         file_path = os.path.join(folder_path, DATABASE_FILE_NAME)  # combine folder and database filename

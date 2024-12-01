@@ -317,5 +317,6 @@ def setup_err_table(err_window, column_properties):
 
 
 def backup_database():
-    if messagebox.askyesno("Confirm Exit", "Do you want to save a backup before exiting?"):
+    if messagebox.askyesno("Database Backup", "Do you want to save a backup of the current database"
+                                              " before exiting?"):
         save_database_backup()

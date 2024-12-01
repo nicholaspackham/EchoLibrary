@@ -1,16 +1,18 @@
 import os
+import shutil
 import subprocess
 import tkinter as tk
 from datetime import datetime
-from tkinter import (ttk, messagebox)
+from tkinter import (ttk, messagebox, filedialog)
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
 from openpyxl.utils import get_column_letter
 from database import (check_song_exists, insert_into_songs, insert_into_error_log, get_all_songs,
-                      get_songs_by_name, get_all_error_logs, get_processing_error_logs, delete_song, delete_error_log)
+                      get_songs_by_name, get_all_error_logs, get_processing_error_logs, delete_song, delete_error_log,
+                      database_path)
 from metadata_extractor import (extract_metadata, is_valid_folder)
 from constants import (SONG_SEARCH_BAR_PLACEHOLDER)
-from settings import (IS_TEST_MODE, APP_ROOT_FOLDER_TEST_MODE, APP_ROOT_FOLDER, APPROVED_MUSIC_FOLDER)
+from settings import (IS_TEST_MODE, APP_ROOT_FOLDER_TEST_MODE, APP_ROOT_FOLDER, APPROVED_MUSIC_FOLDER, DATABASE_FILE_NAME)
 from enums import (ErrorType)
 
 
@@ -520,3 +522,24 @@ def export_to_excel(doc_prefix, col_headers, tree, hide_column_b):
                              "An unexpected error occurred during the Excel export process. "
                              f"See Error Log - Error ID {error_id}."
                              )
+
+
+# ---- Backups ----
+def save_database_backup():
+    db_path = database_path()  # Ensure this returns the database path
+
+    # Let the user select a directory
+    folder_path = filedialog.askdirectory(
+        title="Select Folder to Save Backup"
+    )
+
+    if folder_path:  # if a folder was selected
+        file_path = os.path.join(folder_path, DATABASE_FILE_NAME)  # combine folder and database filename
+
+        try:
+            shutil.copy(db_path, file_path)  # copy the database to the chosen location
+            messagebox.showinfo("Success", f"Database backed up to: {file_path}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to back up the database:\n{e}")
+    else:
+        messagebox.showinfo("Cancelled", "No folder selected. Backup cancelled.")

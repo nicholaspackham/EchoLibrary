@@ -1,10 +1,11 @@
+import shutil
 import tkinter as tk
-from tkinter import (ttk, Toplevel)
+from tkinter import (ttk, Toplevel, filedialog, messagebox)
 from tkinterdnd2 import (TkinterDnD, DND_FILES)
 from gui_components import (create_custom_style, create_button, set_search_bar_placeholder, on_focus_in, on_focus_out,
                             setup_treeview, on_drop, load_all_songs, load_all_error_logs, load_processing_error_logs,
                             refresh_db_data, refresh_err_data, search_song, delete_selected_songs,
-                            delete_selected_error_log, export_to_excel)
+                            delete_selected_error_log, export_to_excel, save_database_backup)
 from constants import HELP_AND_INFORMATION_TEXT
 
 
@@ -313,3 +314,8 @@ def setup_err_table(err_window, column_properties):
     style.configure("Treeview.Heading", font=("Arial", 10, "bold"))  # Optional: Heading font
 
     return err_tree
+
+
+def backup_database():
+    if messagebox.askyesno("Confirm Exit", "Do you want to save a backup before exiting?"):
+        save_database_backup()

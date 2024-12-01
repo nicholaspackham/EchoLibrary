@@ -2,34 +2,43 @@ import os
 import sqlite3
 from datetime import datetime
 from enums import (ErrorType)
+from settings import (IS_TEST_MODE, APP_ROOT_FOLDER_TEST_MODE, APP_ROOT_FOLDER, DATABASE_FILE_NAME)
 
-from settings import (IS_TEST_MODE, APP_ROOT_FOLDER_TEST_MODE, APP_ROOT_FOLDER)
+_database_path = None  # global variable to store the database path
 
-# Define the path for the Echo Library application directory and the database file
-root_directory = os.path.expanduser("~")  # e.g. '/Users/nicholaspackham'
 
-# Using two different directories for testing and prod
-if IS_TEST_MODE:
-    db_directory = os.path.join(root_directory, APP_ROOT_FOLDER_TEST_MODE)
-else:
-    db_directory = os.path.join(root_directory, APP_ROOT_FOLDER)
+def database_path():
+    global _database_path
 
-# Append 'SQLite DB' on to APP_ROOT_FOLDER*
-db_directory = os.path.join(db_directory, "SQLite DB")
+    # If the database path is already initialized, don't recreate it
+    if _database_path is not None:
+        return _database_path
 
-# Create the directory - if it does not exist
-if not os.path.exists(db_directory):
-    os.makedirs(db_directory)
+    # Define the path for the Echo Library application directory and the database file
+    root_directory = os.path.expanduser("~")  # e.g. '/Users/nicholaspackham'
 
-# Generate the file name - which will provide the full database_path
-database_path = os.path.join(db_directory, "echo_library.db")
+    # Using two different directories for testing and prod
+    if IS_TEST_MODE:
+        db_directory = os.path.join(root_directory, APP_ROOT_FOLDER_TEST_MODE)
+    else:
+        db_directory = os.path.join(root_directory, APP_ROOT_FOLDER)
+
+    # Append 'SQLite DB' on to APP_ROOT_FOLDER*
+    db_directory = os.path.join(db_directory, "SQLite DB")
+
+    # Create the directory - if it does not exist
+    os.makedirs(db_directory, exist_ok=True)
+
+    # Generate the file name - which will provide the full database_path
+    _database_path = os.path.join(db_directory, DATABASE_FILE_NAME)
+
+    return _database_path
 
 
 def setup_database():
-    # Ensure the directory exists
-    os.makedirs(db_directory, exist_ok=True)
+    database_path()  # initialise database path
 
-    conn = sqlite3.connect(database_path)
+    conn = sqlite3.connect(_database_path)
     cursor = conn.cursor()
 
     # Using "time" (with speech marks) as a column name instead of time, as 'time' is a keyword
@@ -61,7 +70,7 @@ def insert_into_songs(is_duplicate, metadata):
     if is_duplicate:
         return  # duplicate found
 
-    conn = sqlite3.connect(database_path)
+    conn = sqlite3.connect(_database_path)
     cursor = conn.cursor()
 
     cursor.execute('''INSERT INTO songs 
@@ -96,7 +105,7 @@ def insert_into_error_log(error_type, error_message):
     if not isinstance(error_type, ErrorType):
         raise ValueError("Error: The 'error_type' passed in must be an instance of ErrorType")
 
-    conn = sqlite3.connect(database_path)
+    conn = sqlite3.connect(_database_path)
     cursor = conn.cursor()
 
     created_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -114,7 +123,7 @@ def insert_into_error_log(error_type, error_message):
 
 
 def get_all_songs():
-    conn = sqlite3.connect(database_path)
+    conn = sqlite3.connect(_database_path)
     cursor = conn.cursor()
 
     cursor.execute('''SELECT 
@@ -137,7 +146,7 @@ def get_all_songs():
 
 def get_songs_by_name(song_name):
     # Fetch songs from the database that match the provided song name.
-    conn = sqlite3.connect(database_path)
+    conn = sqlite3.connect(_database_path)
     cursor = conn.cursor()
 
     cursor.execute('''SELECT 
@@ -160,7 +169,7 @@ def get_songs_by_name(song_name):
 
 
 def get_all_error_logs():
-    conn = sqlite3.connect(database_path)
+    conn = sqlite3.connect(_database_path)
     cursor = conn.cursor()
 
     cursor.execute('''SELECT 
@@ -179,7 +188,7 @@ def get_all_error_logs():
 
 
 def get_processing_error_logs():
-    conn = sqlite3.connect(database_path)
+    conn = sqlite3.connect(_database_path)
     cursor = conn.cursor()
 
     cursor.execute('''SELECT 
@@ -200,7 +209,7 @@ def get_processing_error_logs():
 
 
 def delete_song(song, album, artist):
-    conn = sqlite3.connect(database_path)
+    conn = sqlite3.connect(_database_path)
     cursor = conn.cursor()
 
     cursor.execute("DELETE FROM songs WHERE song=? AND album=? AND artist=?",
@@ -211,7 +220,7 @@ def delete_song(song, album, artist):
 
 
 def delete_error_log(error_id):
-    conn = sqlite3.connect(database_path)
+    conn = sqlite3.connect(_database_path)
     cursor = conn.cursor()
 
     # Even if single param, SQLite expects a tuple '(item,)'
@@ -223,7 +232,7 @@ def delete_error_log(error_id):
 
 def check_song_exists(song, album, artist):
     # Check if a song already exists in the database.
-    conn = sqlite3.connect(database_path)
+    conn = sqlite3.connect(_database_path)
     cursor = conn.cursor()
 
     cursor.execute("SELECT 1 FROM songs WHERE song=? AND album=? AND artist=?",

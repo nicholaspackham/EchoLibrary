@@ -44,7 +44,7 @@ For example, say you have five existing folders already imported and are now add
 In Finder/File Explorer, they might look like the following section (Finder/File Explorer Order).
 
 ### Finder/File Explorer Order
-        -Little Mix"
+        -Little Mix
         -Skepta
         -Giggs
         -5SOS
@@ -52,7 +52,7 @@ In Finder/File Explorer, they might look like the following section (Finder/File
         -Stormzy
         -Zayn
         -Niall Horan
-        -Justin Biebe 
+        -Justin Bieber 
         -Harry Styles
 
 ### Existing Folders (how they appear in Echo Library)
